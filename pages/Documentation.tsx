@@ -1,12 +1,25 @@
+
 import React from 'react';
-import { Server, Layers, Database, ArrowRight, BrainCircuit, Terminal, BookOpen } from 'lucide-react';
+import { Server, Layers, Database, ArrowRight, BrainCircuit, Terminal, FolderOpen } from 'lucide-react';
 
 const Documentation: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-12 pb-20">
       <div className="border-b border-idx-border pb-6">
-        <h1 className="text-3xl font-bold text-white">System Architecture</h1>
+        <h1 className="text-3xl font-bold text-white">System Architecture & Codebase</h1>
         <p className="text-slate-400 mt-2">High-level design and data flow for the Ultimate Multimodal IDX Recommendation AI.</p>
+      </div>
+
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 flex items-start gap-4">
+         <FolderOpen className="h-6 w-6 text-blue-400 mt-1" />
+         <div>
+            <h3 className="text-blue-400 font-bold mb-1">Backend Code Included</h3>
+            <p className="text-sm text-slate-300">
+               The prototype now includes the Python backend skeletons necessary to run the AI engine.
+               Check the <code>backend/</code> folder in the project root for <code>main.py</code> (FastAPI), 
+               <code>models.py</code> (Ensemble Logic), and <code>backtester.py</code> (IDX Simulation).
+            </p>
+         </div>
       </div>
 
       {/* Architecture Diagram Visualization */}
