@@ -1,36 +1,22 @@
 # backend/models.py
-"""
-Model utilities: LightGBM train/predict wrappers + basic calibration helpers.
-
-Functions/classes:
-- train_lgbm(X_train, y_train, params=None, num_boost_round=100)
-- predict_lgbm(model, X)
-- save_model(model, path)
-- load_model(path)
-- calibrate_probs_isotonic(probs, y_true) -> returns sklearn IsotonicRegression model and calibration plot data
-"""
-
-from __future__ import annotations
 import os
 import joblib
-import numpy as np
-import pandas as pd
-from typing import Any, Dict, Optional
 import logging
+import pandas as pd
+import numpy as np
 
 logger = logging.getLogger("models")
 logging.basicConfig(level=logging.INFO)
 
-# Optional import LightGBM if installed; if not, instruct user to pip install lightgbm
 try:
     import lightgbm as lgb
-except Exception as e:
+except Exception:
     lgb = None
-    logger.warning("lightgbm not available. Install with `pip install lightgbm` to enable training.")
+    logger.warning("LightGBM not installed. To train models install lightgbm.")
 
-def train_lgbm(X_train: pd.DataFrame, y_train: pd.Series, params: Optional[Dict[str,Any]] = None, num_boost_round: int = 200):
+def train_lgbm(X_train: pd.DataFrame, y_train: pd.Series, params: dict = None, num_boost_round: int = 200):
     if lgb is None:
-        raise ImportError("lightgbm is not installed. pip install lightgbm")
+        raise ImportError("lightgbm not installed")
     default_params = {
         "objective": "binary",
         "metric": "auc",
@@ -46,12 +32,12 @@ def train_lgbm(X_train: pd.DataFrame, y_train: pd.Series, params: Optional[Dict[
     params = {**default_params, **(params or {})}
     dtrain = lgb.Dataset(X_train, label=y_train)
     model = lgb.train(params, dtrain, num_boost_round=num_boost_round)
-    logger.info("Trained LightGBM model.")
+    logger.info("LightGBM trained.")
     return model
 
-def predict_lgbm(model, X: pd.DataFrame) -> np.ndarray:
+def predict_lgbm(model, X: pd.DataFrame):
     if lgb is None:
-        raise ImportError("lightgbm is not installed.")
+        raise ImportError("lightgbm not installed")
     return model.predict(X)
 
 def save_model(model, path: str):
@@ -63,21 +49,3 @@ def load_model(path: str):
     if not os.path.exists(path):
         raise FileNotFoundError(path)
     return joblib.load(path)
-
-# Basic calibration helper (isotonic)
-def calibrate_probs_isotonic(probs: np.ndarray, y_true: np.ndarray):
-    from sklearn.isotonic import IsotonicRegression
-    ir = IsotonicRegression(out_of_bounds='clip')
-    ir.fit(probs, y_true)
-    return ir
-
-# Quick convenience function that returns feature importance if model is LGBM
-def feature_importance(model):
-    if lgb is None:
-        return None
-    try:
-        fi = model.feature_importance(importance_type='gain')
-        names = model.feature_name()
-        return dict(zip(names, fi))
-    except Exception:
-        return None
